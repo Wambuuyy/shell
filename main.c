@@ -4,14 +4,16 @@ int main(int ac, char **av)
 {
 	int filedes = 2;
 	int readfd = -1;
+	Input input;
+	input.initialize_input(&input);
 	list_t *environment_list = NULL;
 	list_t *hist_list = NULL;
 	char hist_file[HISTORY_BUFFER_LENGTH];
 
 	filedes = setfiledes(filedes, ac, av, &readfd);
-	populate_env(&environment_list);
-	read_hist(hist_file, &hist_list);
-	shell(readfd, av, hist_list);
+	populate_env(&input);
+	read_hist(hist_file, &input);
+	shell(&input, av);
 
 	return (0);
 }
@@ -45,7 +47,7 @@ int setfiledes(int filedes, int ac, char **av, int *readfd)
 	return (filedes);
 }
 
-int populate_env(list_t **env_list)
+int populate_env(Input *input)
 {
 	list_t *node = NULL;
 	size_t itr;
@@ -55,14 +57,14 @@ int populate_env(list_t **env_list)
 		appendnode_end(&node, environ[itr], 0);
 		itr++;
 	}
-	*env = node;
+	input->env = node;
 	return (0);
 }
 
-void read_hist(char *history_file, list_t **history)
+void read_hist(char *history_file, Input *input)
 {
 	int linecount = 0;
-	int filedes;
+	int filedes = open_history_file(history_file);
 	struct stat st;
 	char *buffer;
 	ssize_t readlen;
@@ -125,9 +127,9 @@ void read_hist(char *history_file, list_t **history)
 	free(buffer);
 
 	while (linecount-- >= HIST_MAX)
-		delete_index_node(history, 0);
+		delete_index_node(&(input->history), 0);
 
-	renumber_history(*history);
+	renumber_history(&(input->history));
 }
 
 int shell(Input *input, char **av)
@@ -137,26 +139,26 @@ int shell(Input *input, char **av)
 
 	while (input_result != -1 && builtin_result != -2)
 	{
-		clear_info(info);
-		print_prompt(info);
+		clear_info(input);
+		print_prompt(input);
 
-		input_result = readcess_input(info);
-		process_input(info, av, input_result, &builtin_result);
+		input_result = get_input(input);
+		process_input(input, av, input_result, &builtin_result);
 	}
-	store_history(info, hist_list);
-	release_info(info, 1);
-	if (!is_interactive(info) && info[1])
+	store_history(input, input->history);
+	release_input(input, 1);
+	if (!is_interactive(input) && input[1])
 	{
-		exit(info[1]);
+		exit(input->status);
 	}
 
 	if (builtin_result == -2)
 	{
-		if (info[2] == -1)
+		if (input->status == -1)
 		{
-			exit(info[1]);
+			exit(input->status);
 		}
-		exit(info[2]);
+		exit(input->status);
 	}
 	return (builtin_result);
 }

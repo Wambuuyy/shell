@@ -16,17 +16,32 @@
 #define NON_INTERACTIVE_FLAG 0
 #define HISTORY_BUFFER_LENGTH 256
 #define HIST_MAX 100
+#define CMD_NORM 0
 #define BUF_FLUSH '\n'
+#define MAX_ARGV_SIZE 1024
+#define MAX_PATH_SIZE 1024
+#define MAX_ENV_SIZE 1024
 /*struct to handle input*/
-typedef struct
+typedef struct Input
 {
 	char *buffer;
 	size_t length;
 	char **command_buffer;
 	int linecount_flag;
 	int histcount;
-} Input;
+	size_t i;
 
+	char *argv[MAX_ARGV_SIZE];
+	CHAR*ENVIRONMENT[MAX_ENV_SIZE];
+	char *path;
+	int argc;
+	int readfd;
+	list_t *history;
+	list_t *env;
+	list_t *alias;
+	int environ_changed;
+	int status;
+} Input;
 
 typedef struct list
 {

@@ -1,10 +1,21 @@
 # include "shell.h"
 
+/**
+ * main - Entry point for the shell program.
+ * @ac: Number of command-line arguments.
+ * @av: Array of strings containing command-line arguments.
+ *
+ * This function serves as the entry point for the shell program, initializing
+ * necessary structures and starting the main shell loop.
+ *
+ * Return: Integer representing the exit status.
+ */
 int main(int ac, char **av)
 {
 	int filedes = 2;
 	int readfd = -1;
 	Input input;
+
 	input.initialize_input(&input);
 	list_t *environment_list = NULL;
 	list_t *hist_list = NULL;
@@ -18,11 +29,24 @@ int main(int ac, char **av)
 	return (0);
 }
 
+/**
+ * setfiledes - Sets file descriptors and prepares for command execution.
+ * @filedes: File descriptor for redirection.
+ * @ac: Number of command-line arguments.
+ * @av: Array of strings containing command-line arguments.
+ * @readfd: Pointer to the file descriptor for reading.
+ *
+ * This function sets file descriptors and prepares for command execution,
+ * including handling redirection.
+ *
+ * Return: Integer representing the success or failure
+ * of file descriptor setup.
+ */
 int setfiledes(int filedes, int ac, char **av, int *readfd)
 {
 	int opened_fd;
-	filedes +=3;
 
+	filedes += 3;
 	if (ac == 2)
 	{
 		opened_fd = open(av[1], O_RDONLY);
@@ -47,6 +71,15 @@ int setfiledes(int filedes, int ac, char **av, int *readfd)
 	return (filedes);
 }
 
+/**
+ * populate_env - Populates the environment variables in the Input structure.
+ * @input: Pointer to the Input structure.
+ *
+ * This function populates the environment variables in the Input structure
+ * based on the current environment.
+ *
+ * Return: Void.
+ */
 int populate_env(Input *input)
 {
 	list_t *node = NULL;
@@ -61,6 +94,17 @@ int populate_env(Input *input)
 	return (0);
 }
 
+/**
+ * read_hist - Reads the command history from a specified file.
+ * @history_file: Path to the history file.
+ * @input: Pointer to the Input structure.
+ *
+ * This function reads the command history from the
+ * specified file and populates
+ * the history list in the Input structure accordingly.
+ *
+ * Return: Void.
+ */
 void read_hist(char *history_file, Input *input)
 {
 	int linecount = 0;
@@ -70,25 +114,13 @@ void read_hist(char *history_file, Input *input)
 	ssize_t readlen;
 	int last = 0, i = 0;
 
-	filedes = open(history_file,O_RDONLY);
-	if (filedes == -1)
+	filedes = open(history_file, O_RDONLY);
+	if (filedes == -1 || fstat(filedes, &st) == -1 || st.st_size < 2)
 	{
 		handle_error("Error: Unable to open history file for reading");
-		return;
-	}
-
-	if (fstat(filedes, &st) == -1)
-	{
-		handle_error("Error getting file information");
 		close(filedes);
 		return;
 	}
-	if (st.st_size < 2)
-	{
-		close(filedes);
-		return;
-	}
-
 	buffer = malloc(st.st_size + 1);
 	if (!buffer)
 	{
@@ -96,10 +128,7 @@ void read_hist(char *history_file, Input *input)
 		close(fd);
 		return;
 	}
-
 	readlen = read(filedes, buffer, st.st_size);
-	buffer[st.st_size] = '\0';
-
 	if (readlen <= 0)
 	{
 		handle_error("Error reading from history file");
@@ -107,31 +136,25 @@ void read_hist(char *history_file, Input *input)
 		close(filedes);
 		return;
 	}
-
-	close(fd);
-
-	while (i < st.st_size)
-	{
-		if (buffer[i] == '\n')
-		{
-			buffer[i] = '\0';
-			build_history_list(buffer + last, linecount++);
-			last = i + 1;
-		}
-		i++;
-	}
-
-	if (last != st.st_size)
-		build_history_list(buffer + last, linecount++, history);
-
+	close(filedes);
+	buffer[st.st_size] = '\0';
+	hist_buf(buffer, st.st_size, &last, &linecount, input->history);
 	free(buffer);
-
 	while (linecount-- >= HIST_MAX)
 		delete_index_node(&(input->history), 0);
-
 	renumber_history(&(input->history));
 }
 
+/**
+ * shell - Main function for the shell.
+ * @input: Pointer to the Input structure.
+ * @av: Array of strings containing command-line arguments.
+ *
+ * This function serves as the main loop for the shell, processing user input
+ * and executing commands until the exit condition is met.
+ *
+ * Return: Integer representing the exit status.
+ */
 int shell(Input *input, char **av)
 {
 	ssize_t input_result = 0;

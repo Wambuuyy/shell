@@ -21,7 +21,36 @@
 #define MAX_ARGV_SIZE 1024
 #define MAX_PATH_SIZE 1024
 #define MAX_ENV_SIZE 1024
-/*struct to handle input*/
+
+/**
+ * struct Input - Represents the input and state of the shell.
+ * @buffer: The main buffer storing the input command.
+ * @length: The length of the input buffer.
+ * @command_buffer: An array of strings representing
+ * a processed command.
+ * @linecount_flag: A flag indicating whether line counting is active.
+ * @histcount: The history count for tracking command history.
+ * @i: The index used for buffer processing.
+ * @argv: An array of strings representing command arguments.
+ * @ENVIRONMENT: An array of strings representing
+ * the environment variables.
+ * @path: The path associated with the command.
+ * @argc: The number of arguments in the command.
+ * @readfd: File descriptor for reading.
+ * @history: Linked list for storing command history.
+ * @env: Linked list for storing environment variables.
+ * @alias: Linked list for storing command aliases.
+ * @environ_changed: A flag indicating whether
+ * the environment has changed.
+ * @status: The status of the last executed command.
+ *
+ * Description: This structure defines the input
+ * and state of the shell,
+ * including the main input buffer,
+ * processed command buffer, various flags,
+ * and linked lists for history,
+ * environment variables, and aliases.
+ */
 typedef struct Input
 {
 	char *buffer;
@@ -32,7 +61,7 @@ typedef struct Input
 	size_t i;
 
 	char *argv[MAX_ARGV_SIZE];
-	CHAR*ENVIRONMENT[MAX_ENV_SIZE];
+	char *ENVIRONMENT[MAX_ENV_SIZE];
 	char *path;
 	int argc;
 	int readfd;
@@ -42,6 +71,17 @@ typedef struct Input
 	int environ_changed;
 	int status;
 } Input;
+/**
+ * struct list - Represents a node in a linked list.
+ * @str: The string content of the node.
+ * @len: The length of the string.
+ * @next: Pointer to the next node in the list.
+ *
+ * Description: This structure defines a node in a linked list
+ * Each node contains a string (@str), its length (@len),
+ * and a pointer to the next node
+ * in the list (@next).
+ */
 
 typedef struct list
 {
@@ -52,9 +92,6 @@ typedef struct list
 
 
 extern char **environ;
-/*glibal variables*/
-list_t *history = NULL;
-int histcount = 0;
 
 /*Function prototypes*/
 int unset_alias(char ***alias, char *str);
@@ -69,8 +106,6 @@ int history_handler(char **history);
 void sigintHandler(int sig_num);
 int alias_handler(char ***alias, char **argv, int argc);
 void env_handler(char **env);
-void child_command(char *path, char *const argv[]);/*fork_command*/
-void appendnode_end(list_t **head, char *str, int len);/*add env var*/
 int populate_env(list_t **env);
 int _unsetenv(list_t **env, char *var);
 int _setenv(list_t **env, char *var, char *value);
@@ -83,7 +118,7 @@ ssize_t read_buf(info_t *info, char *buffer, size_t *iterator);
 void clear_info(char *arg, char **argv, char *path, int *argc);
 void print_list(char **list);
 void set_info(char *fname, char *arg, char ***argv, int *argc);
-void release_info(char ***argv, char **path, char ***cmd_buf, int *readfd, char ***environ, int all);
+void release_info(char ***argv, char **path, char ***environ, int all);
 void read_history(char *history_file);
 int store_history(void);
 void save_to_file(const char *data, int fd);
@@ -95,8 +130,6 @@ int read_history(void);
 int build_history_list(char *buf, int linecount);
 int renumber_history(void);
 void set_info(char *fname, char *arg, char ***argv, int *argc);
-ssize_t manage_input(char **buf, size_t *len, char ***cmd_buf, int *linecount_flag, int *histcount);
-ssize_t user_input(char **argument, int *command_buffer_type, int *linecount_flag, int *history_count);
 size_t list_len(const list_t *h);
 char **list_to_strings(list_t *head);
 size_t print_list(const list_t *h);

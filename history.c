@@ -1,4 +1,13 @@
 #include "shell.h"
+
+/**
+ * build_hist_list - builds a history list from the input buffer
+ * @buffer: the input buffer containing the command
+ * @linecount: the line count for the command
+ * @history: the history list to be built
+ *
+ * Return: 1 on success, 0 on failure
+ */
 int build_hist_list(char *buffer, int linecount, history)
 {
 	list_t *node = NULL;
@@ -10,6 +19,13 @@ int build_hist_list(char *buffer, int linecount, history)
 		*history = node
 	return (0);
 }
+
+/**
+ * renumber_history - renumbers the history list
+ * @history: the history list to be renumbered
+ *
+ * Return: Always 0 (success)
+ */
 int renumber_history(list_t **history)
 {
 	list_t *node = history;
@@ -51,7 +67,7 @@ char *get_history_file(Input *input)
 }
 
 /**
- * write_history - creates a file, or appends to an existing file
+ * store_history - creates a file, or appends to an existing file
  * @input: input struct
  *
  * Return: 1 on success, else -1

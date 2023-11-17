@@ -22,19 +22,19 @@ void print_prompt(int *info)
 int check_interactive(int readfd)
 {
 	return ((isatty(STDIN_FILENO) && readfd <= 2) ?
-		INTERACTIVE_FLAG : NON_INTERACTIVE_FLAG)
+		INTERACTIVE_FLAG : NON_INTERACTIVE_FLAG);
 }
 
 /**
  * process_input - Processes input based on the results
  * of a previous input operation.
- * @info: Pointer to an integer.
+ * @input: Pointer to an integer.
  * @av: Array of strings representing arguments.
- * @input_result: Result of the input operation.
- * @builtin_result: Pointer to an integer to store
+ * @result: Result of the input operation.
+ * @bresults: Pointer to an integer to store
  * the result of identifying a built-in command.
  */
-void process_input(Input *input, char **av, ssize_t input_result, int *builtin_result)
+void process_input(Input *input, char **av, ssize_t result, int *bresults)
 {
 	if (input_result != -1)
 	{
@@ -45,9 +45,44 @@ void process_input(Input *input, char **av, ssize_t input_result, int *builtin_r
 			identify_command(info);
 		}
 	}
-	else if (is_interactive(info))
+	else if (check_interactive(info))
 	{
 		putchar('\n');
 	}
 	release_info(info, 0);
+}
+
+/**
+ * hist_buf - Processes a history buffer, splitting it into lines
+ * and building a history list.
+ * @buffer: Pointer to the buffer containing the history data.
+ * @size: Size of the buffer.
+ * @last: Pointer to the variable storing the index
+ * of the last processed character.
+ * @lncnt: Pointer to the variable storing the current line count.
+ * @hist: Pointer to the history list.
+ *
+ * This function processes the input buffer,
+ * splitting it into lines based on newline
+ * characters and building a history list.
+ * It updates the 'last' index and increments
+ * the 'linecount' accordingly.
+ */
+void hist_buf(char *buffer, size_t size, int *last, int *lncnt, list_t *hist)
+{
+	int i = 0;
+
+	while (i < size)
+	{
+		if (buffer[i] == '\n')
+		{
+			buffer[i] = '\0';
+			build_history_list(buffer + *last, (*linecount)++, history);
+			*last = i + 1;
+		}
+		i++;
+	}
+
+	if (*last != size)
+		build_history_list(buffer + *last, (*linecount)++, history);
 }

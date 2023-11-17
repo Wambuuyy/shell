@@ -1,6 +1,19 @@
 #include "shell.h"
 
 /**
+ * sigintHandler - blocks ctrl-C
+ * @sig_num: the signal number
+ *
+ * Return: void
+ */
+void sigintHandler(__attribute__((unused))int sig_num)
+{
+	_puts("\n");
+	_puts("$ ");
+	_putchar(BUF_FLUSH);
+}
+
+/**
  * history_handler - displays the history list, one command by line, preceded
  * with line numbers, starting at 0.
  * @input: Input struct
@@ -47,7 +60,7 @@ int alias_handler(Input *input)
 }
 
 /**
- * fork_cmd - forks an exec thread to run cmd
+ * execute_command - forks an exec thread to run cmd
  * @input: the Input struct
  *
  * Return: void
@@ -83,4 +96,21 @@ void execute_command(Input *input)
 				fprintf(stderr, "Permission denied\n");
 		}
 	}
+}
+/**
+ * remove_comments - function replaces first instance of '#' with '\0'
+ * @buf: address of the string to modify
+ *
+ * Return: Always 0;
+ */
+void remove_comments(char *buf)
+{
+	int i;
+
+	for (i = 0; buf[i] != '\0'; i++)
+		if (buf[i] == '#' && (!i || buf[i - 1] == ' '))
+		{
+			buf[i] = '\0';
+			break;
+		}
 }

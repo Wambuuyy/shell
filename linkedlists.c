@@ -1,4 +1,17 @@
 #include "shell.h"
+/**
+ * appendnode_end - Appends a new node at the end of a linked list.
+ * @head: Pointer to the head of the linked list.
+ * @str: The string to be stored in the new node.
+ * @len: The length of the string.
+ *
+ * This function adds a new node with the specified
+ * string and length to the
+ * end of the linked list.
+ * It ensures proper allocation and linkage of nodes.
+ *
+ * Return: 1 if successful, 0 on failure.
+ */
 
 void appendnode_end(list_t **head, char *str, int len)
 {
@@ -21,7 +34,7 @@ void appendnode_end(list_t **head, char *str, int len)
 	new_node->next = NULL;
 
 	current = *head;
-	
+
 	if (current == NULL)
 	{
 		*head = new_node;
@@ -35,6 +48,19 @@ void appendnode_end(list_t **head, char *str, int len)
 		current->next = new_node;
 	}
 }
+
+/**
+ * delete_index_node - Deletes a node at a specified
+ * index in a linked list.
+ * @head: Pointer to the head of the linked list.
+ * @index: The index of the node to be deleted.
+ *
+ * This function removes the node at the given index in the linked l    ist. It
+ * ensures proper cleanup and maintains the integrity of the linked     list.
+ *
+ * Return: 1 if successful, 0 if the index is out of range or
+ * on fai    lure.
+ */
 int delete_index_node(list_t **head, unsigned int index)
 {
 	list_t *node;
@@ -51,7 +77,7 @@ int delete_index_node(list_t **head, unsigned int index)
 		*head = (*head)->next;
 		free(node->str);
 		free(node);
-		return 1;
+		return (1);
 	}
 	while (node && i != index)
 	{
@@ -64,7 +90,7 @@ int delete_index_node(list_t **head, unsigned int index)
 		prev_node->next = node->next;
 		free(node->str);
 		free(node);
-		return(1);
+		return (1);
 	}
 	return (0);
 }

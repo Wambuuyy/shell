@@ -1,4 +1,14 @@
 #include "shell.h"
+/**
+ * initialize_input - Initializes an Input structure with default values.
+ * @input: Pointer to the Input structure to be initialized.
+ *
+ * This function sets the initial values for an
+ * Input structure, preparing it for
+ * input processing. It ensures proper initialization of
+ * members and allocation
+ * of necessary resources.
+ */
 void initialize_input(Input *input)
 {
 	input->buffer = NULL;
@@ -8,9 +18,19 @@ void initialize_input(Input *input)
 	input->histcount = 0;
 	input->i = 0;
 }
+
+/**
+ * free_input - Frees resources allocated for an Input struct
+ * @input: Pointer to the Input structure to be freed.
+ *
+ * This function releases any dynamically allocated memory
+ * associated with an Input
+ * structure, ensuring proper cleanup to prevent memory leaks
+ */
 void free_input(Input *input)
 {
 	int i;
+
 	free(input->buffer);
 	/*Assuming the command buffer is dynamically allocated*/
 	for (i = 0; i < input->histcount; i++)
@@ -19,6 +39,21 @@ void free_input(Input *input)
 	}
 	free(input->command_buffer);
 }
+
+/**
+ * input_buf - Reads input from the user into a dynamically allocated buffer.
+ * @input: Pointer to the Input structure.
+ * @buf: Pointer to the buffer where the input will be stored.
+ * @len: Pointer to the size_t variable to store the
+ * length of the input.
+ *
+ * This function reads input from the user,
+ * dynamically allocating memory for the
+ * buffer to store the input. The length of the input
+ * and the allocated buffer are
+ * returned through the len and buf parameters, respectively.
+ * Return: The number of characters read, or -1 on failure.
+ */
 ssize_t input_buf(Input *input, char **buf, size_t *len)
 {
 	ssize_t r = 0;
@@ -55,8 +90,22 @@ ssize_t input_buf(Input *input, char **buf, size_t *len)
 			}
 		}
 	}
-	return r;
+	return (r);
 }
+
+/**
+ * get_input - Obtains input from the user and updates
+ * the Input structure.
+ * @input: Pointer to the Input structure.
+ *
+ * This function prompts the user for input,
+ * updates the Input structure with the
+ * provided input, and returns the length of the input.
+ * It ensures proper handling
+ * of interactive and non-interactive input modes.
+ *
+ * Return: The length of the input, or -1 on failure.
+ */
 
 ssize_t get_input(Input *input)
 {
@@ -70,7 +119,7 @@ ssize_t get_input(Input *input)
 
 	if (r == -1)
 	{
-		return -1;
+		return (-1);
 	}
 
 	if (len)
@@ -82,9 +131,7 @@ ssize_t get_input(Input *input)
 		while (j < len)
 		{
 			if (is_chain(input, buf, &j))
-			{
 				break;
-			}
 			j++;
 		}
 
@@ -97,19 +144,34 @@ ssize_t get_input(Input *input)
 		}
 
 		*buf_p = p;
-		return strlen(p);
+		return (strlen(p));
 	}
 	*buf_p = buf;
-	return r;
+	return (r);
 }
 
+/**
+ * read_buf - Reads characters from the input buffer
+ * into a specified buffer.
+ * @input: Pointer to the Input structure.
+ * @buf: Pointer to the buffer where characters will be stored.
+ * @i: Pointer to the size_t variable representing
+ * the current index in the buffer.
+ *
+ * This function reads characters from the input buffer,
+ * updating the specified buffer
+ * and index accordingly. It is used for processing
+ * input character by character.
+ *
+ * Return: The number of characters read, or -1 on failure.
+ */
 ssize_t read_buf(Input *input, char *buf, size_t *i)
 {
 	ssize_t r = 0;
 
 	if (*i)
 	{
-		return 0;
+		return (0);
 	}
 
 	r = read(input->readfd, buf, READ_BUF_SIZE);
@@ -119,5 +181,5 @@ ssize_t read_buf(Input *input, char *buf, size_t *i)
 		*i = r;
 	}
 
-	return r;
+	return (r);
 }

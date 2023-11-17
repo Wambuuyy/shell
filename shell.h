@@ -12,26 +12,42 @@
 #include <fcntl.h>
 #include <errno.h>
 
-extern char **environ;
-
-typedef struct list_s {
-    char *str;
-    int len;
-    struct list_s *next;
-} list_t;
-
 #define INTERACTIVE_FLAG 1
 #define NON_INTERACTIVE_FLAG 0
-#define MAX_HISTORY_FILE_LENGTH 256
+#define HISTORY_BUFFER_LENGTH 256
+#define HIST_MAX 100
 #define BUF_FLUSH '\n'
+/*struct to handle input*/
+typedef struct
+{
+	char *buffer;
+	size_t length;
+	char **command_buffer;
+	int linecount_flag;
+	int histcount;
+} Input;
+
+
+typedef struct list
+{
+	char *str;
+	int len;
+	struct list *next;
+} list_t;
+
 
 extern char **environ;
+/*glibal variables*/
+list_t *history = NULL;
+int histcount = 0;
 
 /*Function prototypes*/
 int unset_alias(char ***alias, char *str);
 int set_alias(char ***alias, char *str);
 int print_alias(list_t *node);
-
+int check_interactive(int readfd);
+int in_delim_set(char c, const char *delimiter);
+void handle_comments(char *buf);
 int cd_handler(const char *target_path);
 int exit_handler(const char *exit_arg);
 int history_handler(char **history);
@@ -39,12 +55,12 @@ void sigintHandler(int sig_num);
 int alias_handler(char ***alias, char **argv, int argc);
 void env_handler(char **env);
 void child_command(char *path, char *const argv[]);/*fork_command*/
-void add_env(list_t **head, char *str, int len);/*add env var*/
+void appendnode_end(list_t **head, char *str, int len);/*add env var*/
 int populate_env(list_t **env);
 int _unsetenv(list_t **env, char *var);
 int _setenv(list_t **env, char *var, char *value);
 char **get_environ(list_t *env, int *env_changed);
-int setFileDes(int fd, int ac, char **av, int *readfd);
+int setfiledes(int fd, int ac, char **av, int *readfd);
 ssize_t read_from_fd(int fd, char *buf, size_t *read_count);
 ssize_t my_getline(info_t *info, char **linePtr, size_t *lineLength);
 void sigintHandler(__attribute__((unused)) int signalNumber);
@@ -86,7 +102,6 @@ int replace_vars(info_t *info);
 int replace_string(char **old, char *new);
 char **strtok_str(char *input_string, char *delimiters);
 char **strtok_single(char *input_string, char delimiter);
-int is_delimiter(char c, char *delimiters);
 void free_string_array(char **array);
 void identify_command(char *command, char *const argv[]);
 int identify_builtin(char *command, char **argv);

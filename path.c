@@ -31,7 +31,7 @@ int is_cmd(Input *input, char *path)
  */
 char *dup_chars(char *pathstr, int start, int stop)
 {
-	static char buf[MAX_PATH_SIZE];
+	static char buf[PATH_BUF];
 	int i = 0, k = 0;
 
 	for (k = 0, i = start; i < stop; i++)
@@ -54,9 +54,10 @@ char *find_path(Input *input, char *pathstr, char *cmd)
 	int i = 0, curr_pos = 0;
 	char *path;
 
+
 	if (!pathstr)
 		return (NULL);
-	if ((_strlen(cmd) > 2) && starts_with(cmd, "./"))
+	if ((strlen(cmd) > 2) && (strncmp(cmd, "./", 2) == 0))
 	{
 		if (is_cmd(input, cmd))
 			return (cmd);
@@ -67,11 +68,11 @@ char *find_path(Input *input, char *pathstr, char *cmd)
 		{
 			path = dup_chars(pathstr, curr_pos, i);
 			if (!*path)
-				_strcat(path, cmd);
+				strcat(path, cmd);
 			else
 			{
-				_strcat(path, "/");
-				_strcat(path, cmd);
+				strcat(path, "/");
+				strcat(path, cmd);
 			}
 			if (is_cmd(input, path))
 				return (path);

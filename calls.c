@@ -2,11 +2,11 @@
 
 /**
  * print_prompt - Prints a prompt ('$ ') if the environment is interactive.
- * @info: Pointer to an integer.
+ * @input: Pointer to an integer.
  */
-void print_prompt(int *info)
+void print_prompt(Input *input)
 {
-	if (check_interactive(info))
+	if (check_interactive(input))
 	{
 		printf("$ ");
 		fflush(stdout);
@@ -15,13 +15,13 @@ void print_prompt(int *info)
 
 /**
  * check_interactive - Checks if the program is running in interactive mode.
- * @readfd: Integer representing the file descriptor.
+ * @input: Integer representing the file descriptor.
  *
  * Return: INTERACTIVE_FLAG if interactive, NON_INTERACTIVE_FLAG otherwise.
  */
-int check_interactive(int readfd)
+int check_interactive(Input *input)
 {
-	return ((isatty(STDIN_FILENO) && readfd <= 2) ?
+	return ((isatty(STDIN_FILENO) && input->readfd <= 2) ?
 		INTERACTIVE_FLAG : NON_INTERACTIVE_FLAG);
 }
 
@@ -36,53 +36,47 @@ int check_interactive(int readfd)
  */
 void process_input(Input *input, char **av, ssize_t result, int *bresults)
 {
-	if (input_result != -1)
+	if (result != -1)
 	{
-		set_info(info, av);
-		*builtin_result = identify_builtin(info);
-		if (*builtin_result == -1)
+		set_info(input, av[0]);
+		*bresults = identify_builtin(input);
+		if (*bresults == -1)
 		{
-			identify_command(info);
+			identify_command(input);
 		}
 	}
-	else if (check_interactive(info))
+	else if (check_interactive(input))
 	{
 		putchar('\n');
 	}
-	release_info(info, 0);
+	release_info(input, 0);
 }
 
 /**
  * hist_buf - Processes a history buffer, splitting it into lines
  * and building a history list.
- * @buffer: Pointer to the buffer containing the history data.
- * @size: Size of the buffer.
- * @last: Pointer to the variable storing the index
- * of the last processed character.
- * @lncnt: Pointer to the variable storing the current line count.
- * @hist: Pointer to the history list.
- *
+ * input: Input struct.
  * This function processes the input buffer,
  * splitting it into lines based on newline
  * characters and building a history list.
  * It updates the 'last' index and increments
  * the 'linecount' accordingly.
  */
-void hist_buf(char *buffer, size_t size, int *last, int *lncnt, list_t *hist)
+void hist_buf(Input *input, size_t size, char **buffer, int *last)
 {
-	int i = 0;
+	size_t i = 0;
 
 	while (i < size)
 	{
-		if (buffer[i] == '\n')
+		if (strcmp(buffer[i], "\n") == 0)
 		{
 			buffer[i] = '\0';
-			build_history_list(buffer + *last, (*linecount)++, history);
+			build_hist_list(input);
 			*last = i + 1;
 		}
 		i++;
 	}
 
-	if (*last != size)
-		build_history_list(buffer + *last, (*linecount)++, history);
+	if (*last != (int)size)
+		build_hist_list(input);
 }

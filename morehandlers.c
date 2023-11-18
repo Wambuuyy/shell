@@ -8,9 +8,9 @@
  */
 void sigintHandler(__attribute__((unused))int sig_num)
 {
-	_puts("\n");
-	_puts("$ ");
-	_putchar(BUF_FLUSH);
+	puts("\n");
+	puts("$ ");
+	putchar(BUF_FLUSH);
 }
 
 /**
@@ -49,15 +49,25 @@ int alias_handler(Input *input)
 	}
 	for (i = 1; input->argv[i]; i++)
 	{
-		p = _strchr(input->argv[i], '=');
+		p = strchr(input->argv[i], '=');
 		if (p)
 			set_alias(input, input->argv[i]);
 		else
-			print_alias(node_starts_with(input->alias, input->argv[i], '='));
+		{
+			continue;
+		}
+	}
+	return (0);
+}
+/*
+			alias_node = starts_with(input->alias, input->argv[i]);
+			if(alias_node)
+				print_alias(alias_node);
+		}
 	}
 
 	return (0);
-}
+}*/
 
 /**
  * execute_command - forks an exec thread to run cmd

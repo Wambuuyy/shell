@@ -10,11 +10,11 @@
  */
 int _getline(Input *input, char **ptr, size_t *length)
 {
-	static char buf[READ_BUF_SIZE];
+	static char buf[READ_BUF];
 	static size_t i, len;
 	size_t k;
 	ssize_t r = 0, s = 0;
-	char *p = *ptr, *new_p = NULL, *c;
+	char *p = *ptr, *new_p = NULL;
 	int newline_pos;
 
 
@@ -31,7 +31,7 @@ int _getline(Input *input, char **ptr, size_t *length)
 
 	newline_pos = find_newline(buf, i, len);
 	k = newline_pos != -1 ? (size_t)(newline_pos - i + 1) : len;
-	new_p = realloc(p, s, s ? s + k : k + 1);
+	new_p = realloc_str(p, s, s ? s + k : k + 1);
 
 	if (!new_p)
 		return (p ? (free(p), (-1)) : (-1));
@@ -55,7 +55,7 @@ int _getline(Input *input, char **ptr, size_t *length)
  *
  * Return: Pointer to the reallocated string
  */
-char *realloc_str(char *old, size_t old_len, size_t new_len)
+char *realloc_str(char *old, size_t old_len __attribute__((unused)), size_t new_len)
 {
 	return (realloc(old, new_len));
 }
@@ -71,10 +71,10 @@ char *realloc_str(char *old, size_t old_len, size_t new_len)
  */
 ssize_t add_buf(char *dst, const char *src, size_t d_size, size_t s_len)
 {
-	if (src_len >= dst_size)
+	if (s_len >= d_size)
 		return (-1);
 
-	strncat(dst, src, src_len);
+	strncat(dst, src, s_len);
 	return (0);
 }
 
@@ -88,7 +88,9 @@ ssize_t add_buf(char *dst, const char *src, size_t d_size, size_t s_len)
  */
 int find_newline(const char *buf, size_t start, size_t len)
 {
-	for (size_t i = start; i < len; i++)
+	size_t i;
+
+	for (i = start; i < len; i++)
 	{
 		if (buf[i] == '\n')
 			return ((int)i);

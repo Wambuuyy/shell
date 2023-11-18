@@ -2,43 +2,41 @@
 
 /**
  * build_hist_list - builds a history list from the input buffer
- * @buffer: the input buffer containing the command
- * @linecount: the line count for the command
- * @history: the history list to be built
+ * @input: the input buffer containing the command
  *
  * Return: 1 on success, 0 on failure
  */
-int build_hist_list(char *buffer, int linecount, history)
+int build_hist_list(Input *input)
 {
 	list_t *node = NULL;
 
-	if (*history)
-		node = *history
-	appendnode_end(&node, buffer, linecount);
-	if (!*history)
-		*history = node
+	if (input->history)
+		node = input->history;
+	appendnode_end(&node, input->buffer, input->linecount);
+	if (!input->history)
+		input->history = node;
 	return (0);
 }
 
 /**
  * renumber_history - renumbers the history list
- * @history: the history list to be renumbered
+ * @input: the history list to be renumbered
  *
  * Return: Always 0 (success)
  */
-int renumber_history(list_t **history)
+int renumber_history(Input *input)
 {
-	list_t *node = history;
+	list_t *node = input->history;
 	int i = 0;
 
 	while (node)
 	{
-		node->num = i++;
+		node->len = i++;
 		node = node->next;
 	}
 
-	histcount = i;
-	return (histcount);
+	input->histcount = i;
+	return (input->histcount);
 }
 /**
  * get_history_file - gets the history file
@@ -46,22 +44,22 @@ int renumber_history(list_t **history)
  *
  * Return: allocated string containing history file
  */
-char *get_history_file(Input *input)
+char *get_history_file(Input *input __attribute__((unused)))
 {
 	char *buf, *dir;
 
-	dir = getenv(input, "HOME=");
+	dir = getenv("HOME");
 	if (!dir)
 		return (NULL);
 
-	buf = malloc(sizeof(char) * (_strlen(dir) + _strlen(HIST_FILE) + 2));
+	buf = malloc(sizeof(char) * (strlen(dir) + strlen(HISTORY_FILE) + 2));
 	if (!buf)
 		return (NULL);
 
 	buf[0] = 0;
 	strcpy(buf, dir);
 	strcat(buf, "/");
-	strcat(buf, HIST_FILE);
+	strcat(buf, HISTORY_FILE);
 
 	return (buf);
 }
@@ -89,12 +87,11 @@ int store_history(Input *input)
 
 	for (node = input->history; node; node = node->next)
 	{
-		_putsfd(node->str, fd);
-		_putfd('\n', fd);
+		write(fd, node->str, strlen(node->str));
+		write(fd, "\n", 1);
 	}
 
-	_putfd(BUF_FLUSH, fd);
+	write(fd, "\n", 1);
 	close(fd);
-
 	return (1);
 }

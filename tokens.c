@@ -1,4 +1,4 @@
-#include "shell.h">
+#include "shell.h"
 
 /**
  * strtok_str - Splits a string into words based on delimiters
@@ -79,11 +79,8 @@ char **strtok_single(char *input_string, char delimiter)
 		return (NULL);
 	for (i = 0, j = 0; j < num_words; j++)
 	{
-		while
-		{
-			(input_string[i] == delimiter && input_string[i] != delimiter)
+		while (input_string[i] == delimiter && input_string[i] != delimiter)
 			i++;
-		}
 		k = 0;
 		while (input_string[i + k] != delimiter &&
 				input_string[i + k] && input_string[i + k] != delimiter)
@@ -125,7 +122,14 @@ int is_delimiter(char character, char *delimiters)
  */
 void free_string_array(char **array)
 {
-	for (int i = 0; array[i] != NULL; i++)
+	size_t i;
+
+	if(!array)
+	{
+		return;
+	}
+	
+	for (i = 0; array[i] != NULL; i++)
 		free(array[i]);
 	free(array);
 }

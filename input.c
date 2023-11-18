@@ -80,10 +80,10 @@ ssize_t input_buf(Input *input, char **buf, size_t *len)
 			}
 			input->linecount_flag = 1;
 			remove_comments(*buf);
-			build_history_list(input, *buf, input->histcount++);
+			build_hist_list(input);
 
 			/* Check for command chain */
-			if (_strchr(*buf, ';'))
+			if (strchr(*buf, ';'))
 			{
 				*len = r;
 				input->command_buffer = buf;
@@ -140,7 +140,7 @@ ssize_t get_input(Input *input)
 		if (i >= len)
 		{
 			i = len = 0;
-			input->cmd_buf_type = CMD_NORM;
+			input->buffer_type = COMMAND_NORM;
 		}
 
 		*buf_p = p;
@@ -174,7 +174,7 @@ ssize_t read_buf(Input *input, char *buf, size_t *i)
 		return (0);
 	}
 
-	r = read(input->readfd, buf, READ_BUF_SIZE);
+	r = read(input->readfd, buf, READ_BUF);
 
 	if (r >= 0)
 	{

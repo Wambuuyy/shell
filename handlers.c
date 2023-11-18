@@ -12,20 +12,20 @@ int exit_handler(Input *input)
 
 	if (input->argv[1]) /* If there is an exit argument */
 	{
-		exitcheck = _erratoi(input->argv[1]);
+		exitcheck = atoi(input->argv[1]);
 		if (exitcheck == -1)
 		{
 			input->status = 2;
 			print_error(input, "Illegal number: ");
-			_eputs(input->argv[1]);
-			_eputchar('\n');
+			puts(input->argv[1]);
+			putchar('\n');
 			return (1);
 		}
 
-		input->err_num = _erratoi(input->argv[1]);
+		input->error = atoi(input->argv[1]);
 		return (-2);
 	}
-	input->err_num = -1;
+	input->error = -1;
 	return (-2);
 }
 
@@ -41,38 +41,38 @@ int cd_handler(Input *input)
 
 	s = getcwd(buffer, 1024);
 	if (!s)
-		_puts("TODO: >>getcwd failure emsg here<<\n");
+		puts("TODO: >>getcwd failure emsg here<<\n");
 	if (!input->argv[1])
 	{
-		dir = _getenv(input, "HOME=");
+		dir = getenv("HOME");
 		if (!dir)
-			chdir_ret = /* TODO: what should this be? */
-				chdir((dir = _getenv(input, "PWD=")) ? dir : "/");
+			chdir_ret = 
+				chdir((dir = getenv("PWD")) ? dir : "/");
 		else
 			chdir_ret = chdir(dir);
 	}
-	else if (_strcmp(input->argv[1], "-") == 0)
+	else if (strcmp(input->argv[1], "-") == 0)
 	{
-		if (!_getenv(input, "OLDPWD="))
+		if (!getenv("OLDPWD"))
 		{
-			_puts(s);
-			_putchar('\n');
+			puts(s);
+			putchar('\n');
 			return (1);
 		}
-		_puts(_getenv(input, "OLDPWD=")), _putchar('\n');
-		chdir_ret = /* TODO: what should this be? */
-			chdir((dir = _getenv(input, "OLDPWD=")) ? dir : "/");
+		puts(getenv("OLDPWD")), putchar('\n');
+		chdir_ret =
+			chdir((dir = getenv("OLDPWD")) ? dir : "/");
 	}
 	else
 		chdir_ret = chdir(input->argv[1]);
 	if (chdir_ret == -1)
 	{
 		print_error(input, "can't cd to ");
-		_eputs(input->argv[1]), _eputchar('\n');
+		puts(input->argv[1]), putchar('\n');
 	}
 	else
 	{
-		_setenv(input, "OLDPWD", _getenv(input, "PWD="));
+		_setenv(input, "OLDPWD", getenv("PWD"));
 		_setenv(input, "PWD", getcwd(buffer, 1024));
 	}
 	return (0);
@@ -88,9 +88,9 @@ int help_handler(Input *input)
 	char **arg_array;
 
 	arg_array = input->argv;
-	_puts("help call works. Function not yet implemented \n");
+	puts("help call works. Function not yet implemented \n");
 	if (0)
-		_puts(*arg_array); /* temp att_unused workaround */
+		puts(*arg_array); /* temp att_unused workaround */
 	return (0);
 }
 

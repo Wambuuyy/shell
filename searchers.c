@@ -13,11 +13,11 @@
 int identify_command(Input *input)
 {
 	char *path = NULL;
-	size_t i;
+	size_t i, k;
 
 	if (input->buffer[0] == '\n')
 	{
-		return;
+		return (0);
 	}
 
 	for (i = 0, k = 0; input->buffer[i]; i++)
@@ -27,20 +27,26 @@ int identify_command(Input *input)
 	}
 
 	if (!k)
-		return;
+		return (0);
 
 	path = getenv("PATH");
 
 	if (path)
-		path = find_path(input->buffer, path, input->argv[0]);
+		path = find_path(input, path, input->argv[0]);
 
 	if (path)
-		execute_command(path, input->argv);
+	{
+		execute_command(input);
+		return (0);
+	}
 	else
 	{
 		if ((isatty(STDIN_FILENO) || getenv("PATH") || input->buffer[0] == '/') &&
-				is_cmd(input->buffer, input->argv[0]))
-			execute_command(input->buffer, input->argv);
+				is_cmd(input, input->argv[0]))
+		{
+			execute_command(input);
+			return (0);
+		}
 		else
 		{
 			fprintf(stderr, "Error: Command not found\n");
@@ -53,47 +59,38 @@ int identify_command(Input *input)
  * identify_builtin - Identifies and processes built-in
  * commands from the input.
  * @input: A pointer to the Input structure containing
- * the command information.
  * Description:
- * This function checks if the command in the
- * input buffer corresponds to
- * a built-in command and executes the corresponding action.
+ * This function checks if the command in the input buffer
+ * corresponds to a built-in command and executes the corresponding action.
  *
- * Return: An integer status code indicating the success or failure of
- * the identification process.
+ * Return: An integer status code indicating the success
+ * or failure of the identification process.
  */
 int identify_builtin(Input *input)
 {
-	const char *builtin_types[MAX_BUILTIN_TYPES] = {
-		"exit",
-		"env",
-		"history",
-		"setenv",
-		"unsetenv",
-		"cd",
-		"alias",
-		"help"
+	int i, builtreturn = -1;
+
+	struct Builtins builtins[] = {
+		{"exit", exit_handler},
+		{"env", env_handler},
+		{"history", history_handler},
+		{"setenv", setenv_handler},
+		{"unsetenv", unsetenv_handler},
+		{"cd", cd_handler},
+		{"alias", alias_handler},
+		{"help", help_handler},
+		{NULL, NULL}
 	};
 
-
-	int (*builtin_funcs[MAX_BUILTIN_TYPES])(char **) = {
-		exit_handler,
-		env_handler,
-		history_handler,
-		setenv_handler,
-		unsetenv_handler,
-		cd_handler,
-		alias_handler,
-		help_handler
-	};
-
-
-	for (int i = 0; i < MAX_BUILTIN_TYPES; i++)
+	for (i = 0; builtins[i].command != NULL; i++)
 	{
-		if (strcmp(input->buffer, builtin_types[i]) == 0)
+		if (strcmp(input->buffer, builtins[i].command) == 0)
 		{
-			input->status = builtin_funcs[i](input->argv);
-			return (i);
+			input->status = builtins[i].handler(input);
+			builtreturn = i;
+			break;
 		}
 	}
+
+	return (builtreturn);
 }

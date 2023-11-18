@@ -11,14 +11,14 @@ int unset_alias(Input *input, char *str)
 {
 	char *p, c;
 	int ret;
-
-	p = _strchr(str, '=');
+	
+	p = strchr(str, '=');
 	if (!p)
 		return (1);
 	c = *p;
 	*p = 0;
-	ret = delete_node_at_index(&(input->alias),
-			get_node_index(input->alias, node_starts_with(input->alias, str, -1)));
+	ret = delete_index_node(&(input->alias),
+			get_node_index(input->alias, str));
 	*p = c;
 	return (ret);
 }
@@ -34,7 +34,7 @@ int set_alias(Input *input, char *str)
 {
 	char *p;
 
-	p = _strchr(str, '=');
+	p = strchr(str, '=');
 	if (!p)
 		return (1);
 	if (!*++p)
@@ -42,7 +42,9 @@ int set_alias(Input *input, char *str)
 
 
 	unset_alias(input, str);
-	return (add_node_end(&(input->alias), str, 0) == NULL);
+
+	appendnode_end(&(input->alias), str, 0);
+	return (0);
 }
 
 /**
@@ -57,13 +59,49 @@ int print_alias(list_t *node)
 
 	if (node)
 	{
-		p = _strchr(node->str, '=');
+		p = strchr(node->str, '=');
 		for (a = node->str; a <= p; a++)
-			_putchar(*a);
-		_putchar('\'');
-		_puts(p + 1);
-		_puts("'\n");
+			putchar(*a);
+		putchar('\'');
+		puts(p + 1);
+		puts("'\n");
 		return (0);
 	}
 	return (1);
+}
+/**
+ * create_list_node - Creates a new list node.
+ * @str: The string to be stored in the node.
+ * @next: Pointer to the next node in the list.
+ *
+ * Return: A pointer to the newly created node or NULL on failure.
+ */
+list_t *create_list_node(const char *str, list_t *next)
+{
+	/* Allocate memory for the new node */
+	list_t *newNode = (list_t *)malloc(sizeof(list_t));
+	        
+	/* Check for memory allocation failure */
+	if (newNode == NULL)
+	{
+		/* Handle memory allocation failure */
+		return NULL;
+	}
+
+	/* Allocate memory for the string and copy it */
+	newNode->str = strdup(str);
+
+	/* Check for memory allocation failure */
+	if (newNode->str == NULL)
+	{
+		/* Handle memory allocation failure */
+		free(newNode);
+		return NULL;
+	}
+
+	/* Set the next pointer */
+	newNode->next = next;
+
+	/* Return a pointer to the newly created node */
+	return newNode;
 }

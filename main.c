@@ -1,4 +1,4 @@
-# include "shell.h"
+#include "shell.h"
 
 /**
  * main - Entry point for the shell program.
@@ -15,11 +15,7 @@ int main(int ac, char **av)
 	int filedes = 2;
 	int readfd = -1;
 	Input input;
-
-	input.initialize_input(&input);
-	list_t *environment_list = NULL;
-	list_t *hist_list = NULL;
-	char hist_file[HISTORY_BUFFER_LENGTH];
+	char hist_file[256];
 
 	filedes = setfiledes(filedes, ac, av, &readfd);
 	populate_env(&input);
@@ -65,7 +61,7 @@ int setfiledes(int filedes, int ac, char **av, int *readfd)
 			perror("Error during file opening");
 			return (-1);
 		}
-		readfd = opened_fd;
+		*readfd = opened_fd;
 		return (opened_fd);
 	}
 	return (filedes);
@@ -108,13 +104,12 @@ int populate_env(Input *input)
 void read_hist(char *history_file, Input *input)
 {
 	int linecount = 0;
-	int filedes = open_history_file(history_file);
+	int filedes = open(history_file, O_RDONLY);
 	struct stat st;
 	char *buffer;
 	ssize_t readlen;
-	int last = 0, i = 0;
+	int last = 0;
 
-	filedes = open(history_file, O_RDONLY);
 	if (filedes == -1 || fstat(filedes, &st) == -1 || st.st_size < 2)
 	{
 		handle_error("Error: Unable to open history file for reading");
@@ -125,7 +120,7 @@ void read_hist(char *history_file, Input *input)
 	if (!buffer)
 	{
 		handle_error("Memory allocation error");
-		close(fd);
+		close(filedes);
 		return;
 	}
 	readlen = read(filedes, buffer, st.st_size);
@@ -138,11 +133,11 @@ void read_hist(char *history_file, Input *input)
 	}
 	close(filedes);
 	buffer[st.st_size] = '\0';
-	hist_buf(buffer, st.st_size, &last, &linecount, input->history);
+	hist_buf(input, st.st_size, &buffer, &last);
 	free(buffer);
-	while (linecount-- >= HIST_MAX)
+	while (linecount-- >= HISTORY_MAX)
 		delete_index_node(&(input->history), 0);
-	renumber_history(&(input->history));
+	renumber_history(input);
 }
 
 /**
@@ -168,9 +163,9 @@ int shell(Input *input, char **av)
 		input_result = get_input(input);
 		process_input(input, av, input_result, &builtin_result);
 	}
-	store_history(input, input->history);
-	release_input(input, 1);
-	if (!is_interactive(input) && input[1])
+	store_history(input);
+	release_info(input, 1);
+	if (!check_interactive(input) && av[1])
 	{
 		exit(input->status);
 	}

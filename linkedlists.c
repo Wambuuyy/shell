@@ -94,3 +94,30 @@ int delete_index_node(list_t **head, unsigned int index)
 	}
 	return (0);
 }
+/**
+ * custom_strtok - Custom implementation of strtok
+ *
+ * @input_string: The input string to be tokenized
+ * @delimiters: A string containing delimiter characters
+ *
+ * Return: An array of strings (tokens) or NULL on failure
+ *
+ * This function provides a custom implementation of strtok that can switch
+ * between two different implementations: strtok_str and strtok_single.
+ * It checks if the delimiters contain '\t' and calls the appropriate
+ * implementation accordingly. The resulting array of tokens is dynamically
+ * allocated and should be freed by the caller when no longer needed.
+ */
+char **custom_strtok(char *input_string, char *delimiters)
+{
+	if (strchr(delimiters, '\t') != NULL)
+	{
+		/* Call strtok_str for whitespace and tabs*/
+		return strtok_str(input_string, delimiters);
+	}
+	else
+	{
+		/* Call strtok_single for a single delimiter*/
+		return strtok_single(input_string, delimiters[0]);
+	}
+}	
